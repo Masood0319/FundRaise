@@ -47,13 +47,13 @@ export function AppShell({ children, title, subtitle, actions }) {
     setAuthReady(true);
   }, [router]);
 
-  if (!authReady) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-muted)]">
-        Checking your session...
-      </div>
-    );
-  }
+  // if (!authReady) {
+  //   return (
+  //     <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-muted)]">
+  //       Checking your session...
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
