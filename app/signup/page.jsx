@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { apiRequest } from "@/lib/apiClient"
 
-export default function SignupPage() {
+function SignupPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const oauthError = searchParams.get("error")
@@ -151,10 +151,18 @@ export default function SignupPage() {
 
         {/* Footer */}
         <p className="text-xs text-gray-500 text-center mt-6">
-          We’ll send a one-time verification code to your email
+          We'll send a one-time verification code to your email
         </p>
 
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupPageInner />
+    </Suspense>
   )
 }
