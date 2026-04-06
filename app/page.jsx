@@ -1,232 +1,178 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowRight, BadgeCheck, ChartColumnIncreasing, ShieldCheck } from "lucide-react";
-import { PublicNavbar } from "@/components/layout/public-navbar";
-import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { StartupCard } from "@/components/startup-card";
-import { InvestorCard } from "@/components/investor-card";
-import { investors, startups } from "@/data/mock";
-import { apiRequest } from "@/lib/apiClient";
-import { logoutUser } from "@/lib/auth";
-import { BRAND_NAME } from "@/config/branding";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Calendar,
+  ImageIcon,
+  MessageSquare,
+  Share2,
+  ThumbsUp,
+  Video,
+} from "lucide-react";
 
-const stats = [
-  { label: "Verified founders", value: "4,100+" },
-  { label: "Active investors", value: "1,250+" },
-  { label: "Capital deployed", value: "$2.8B" },
-  { label: "Monthly deal flow", value: "740" },
+const feedItems = [
+  {
+    id: "post-1",
+    author: "Ava Thompson",
+    role: "Founder · FlowLedger",
+    time: "12m",
+    content:
+      "We just crossed $500k ARR with 3 enterprise pilots. Looking to connect with investors focused on fintech infrastructure.",
+    tags: ["FinTech", "SaaS", "Series A"],
+    stats: { likes: 128, comments: 24, shares: 8 },
+  },
+  {
+    id: "post-2",
+    author: "Nadia Kapoor",
+    role: "Investor · Northbridge Capital",
+    time: "1h",
+    content:
+      "Actively sourcing climate and energy AI startups with strong data moats. DM if you are raising Seed to Series A.",
+    tags: ["ClimateTech", "Energy", "Seed"],
+    stats: { likes: 92, comments: 18, shares: 6 },
+  },
+  {
+    id: "post-3",
+    author: "Aster Ventures",
+    role: "Venture Fund · HealthTech",
+    time: "3h",
+    content:
+      "Congrats to MediSpan on closing their $3.5M round. Excited to support remote chronic care at scale.",
+    tags: ["HealthTech", "Series A"],
+    stats: { likes: 210, comments: 34, shares: 12 },
+  },
 ];
 
-export default function Home() {
-  const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const [user, setUser] = useState(null);
+function getInitials(name = "") {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
 
-  useEffect(() => {
-    let active = true;
-    const checkAuth = async () => {
-      try {
-        const data = await apiRequest("auth/me", { method: "GET", cache: "no-store" });
-        if (!active) return;
-        const resolvedUser = data?.data?.user || null;
-        setUser(resolvedUser);
-      } catch (_) {
-        if (active) setUser(null);
-      } finally {
-        if (active) setCheckingAuth(false);
-      }
-    };
-    checkAuth();
-    return () => {
-      active = false;
-    };
-  }, []);
+function ShareComposer() {
+  return (
+    <Card className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface)] text-sm font-semibold text-[var(--primary)]">
+          AT
+        </div>
+        <div className="flex-1">
+          <Input placeholder="Share an update with investors or founders..." />
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2 text-sm text-[var(--text-muted)]">
+          <button className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5">
+            <ImageIcon size={16} /> Photo
+          </button>
+          <button className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5">
+            <Video size={16} /> Video
+          </button>
+          <button className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5">
+            <Calendar size={16} /> Event
+          </button>
+        </div>
+        <Button>Post</Button>
+      </div>
+    </Card>
+  );
+}
 
-  const handleContinue = () => {
-    const role = user?.role;
-    if (!role) return router.push("/role");
-    if (role === "investor") return router.push("/home");
-    if (role === "founder") return router.push("/home");
-    router.push("/role");
-  };
+function FeedCard({ post }) {
+  return (
+    <Card className="space-y-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-sm font-semibold text-[var(--primary)]">
+            {getInitials(post.author)}
+          </div>
+          <div>
+            <CardTitle className="text-base">{post.author}</CardTitle>
+            <CardDescription className="text-xs">
+              {post.role} · {post.time}
+            </CardDescription>
+          </div>
+        </div>
+        <Button variant="ghost" size="sm">
+          Follow
+        </Button>
+      </div>
+      <p className="text-sm text-[var(--text-main)] md:text-base">{post.content}</p>
+      <div className="flex flex-wrap gap-2">
+        {post.tags.map((tag) => (
+          <Badge key={tag}>{tag}</Badge>
+        ))}
+      </div>
+      <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+        <span>{post.stats.likes} likes</span>
+        <span>
+          {post.stats.comments} comments · {post.stats.shares} shares
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
+        <Button variant="ghost" size="sm" className="flex-1">
+          <ThumbsUp size={16} className="mr-2" /> Like
+        </Button>
+        <Button variant="ghost" size="sm" className="flex-1">
+          <MessageSquare size={16} className="mr-2" /> Comment
+        </Button>
+        <Button variant="ghost" size="sm" className="flex-1">
+          <Share2 size={16} className="mr-2" /> Share
+        </Button>
+      </div>
+    </Card>
+  );
+}
 
-  const handleSwitchAccount = () => {
-    logoutUser({ redirect: false, toast: false });
-    setUser(null);
-  };
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState("feed");
+
+  const filteredFeed = useMemo(() => feedItems, []);
 
   return (
-    <div>
-      <PublicNavbar />
-
-      <section className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-16 md:px-6 md:py-24 lg:px-8 md:grid-cols-[1.2fr_1fr]">
-        <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-xs text-[var(--text-muted)]">
-            <ShieldCheck size={14} className="text-[var(--accent)]" /> Verified network for trusted funding
-          </p>
-          <h1 className="mt-5 text-3xl font-semibold leading-tight md:text-4xl lg:text-5xl">
-            Connecting Visionary Founders with Smart Investors
-          </h1>
-          <p className="mt-4 max-w-xl text-sm text-[var(--text-muted)] md:text-base">
-            {BRAND_NAME} helps qualified founders get discovered by aligned investors with secure messaging, profile verification, and clear deal workflows.
-          </p>
-          <div className="mt-6 min-h-[110px]">
-            <div
-              className={`transition-opacity duration-300 ${
-                checkingAuth ? "opacity-0" : "opacity-100"
+    <AppShell
+      title="Home"
+      subtitle="Your personalized founder and investor activity feed."
+    >
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center gap-2">
+          {[
+            { id: "feed", label: "Feed" },
+            { id: "connections", label: "Connections" },
+            { id: "investments", label: "Investments" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
+                activeTab === tab.id
+                  ? "border-transparent bg-[var(--primary)] text-white"
+                  : "border-[var(--border)] bg-white text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
             >
-              {user ? (
-                <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                    Continue as
-                  </p>
-                  <p className="mt-2 text-base font-semibold text-[var(--text-main)]">
-                    {user?.name || user?.email || "Verified user"}
-                  </p>
-                  {user?.email && (
-                    <p className="text-xs text-[var(--text-muted)]">{user.email}</p>
-                  )}
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <Button size="lg" onClick={handleContinue}>
-                      Continue
-                    </Button>
-                    <Button variant="secondary" size="lg" onClick={handleSwitchAccount}>
-                      Switch account
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-3">
-                  <Link href="/login">
-                    <Button size="lg">
-                      Login <ArrowRight size={16} className="ml-1" />
-                    </Button>
-                  </Link>
-                  <Link href="/signup?role=founder">
-                    <Button variant="secondary" size="lg">
-                      Get Started
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-            {checkingAuth && (
-              <div className="h-[110px] animate-pulse rounded-2xl border border-[var(--border)] bg-white/60" />
-            )}
-          </div>
-        </div>
-        <Card className="bg-white">
-          <CardTitle className="flex items-center gap-2">
-            <ChartColumnIncreasing size={18} className="text-[var(--primary)]" /> Deal activity this week
-          </CardTitle>
-          <CardDescription className="mt-1">Live cross-platform momentum</CardDescription>
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            {stats.map((s) => (
-              <div key={s.label} className="rounded-xl bg-[var(--surface)] p-3">
-                <p className="text-xl font-semibold text-[var(--primary)]">{s.value}</p>
-                <p className="text-xs text-[var(--text-muted)]">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </section>
-
-      <section id="how" className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 py-10">
-        <h2 className="text-2xl font-semibold md:text-3xl">How it works</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            ["Create verified profile", "Founders and investors complete trust and identity checks."],
-            ["Discover and connect", "Match by stage, sector, geography, and check quality signals."],
-            ["Manage deals", "Run funding conversations with structured negotiation workflows."],
-          ].map(([title, desc], i) => (
-            <Card key={title}>
-              <p className="text-xs font-semibold text-[var(--secondary)]">Step {i + 1}</p>
-              <CardTitle className="mt-2">{title}</CardTitle>
-              <CardDescription className="mt-2">{desc}</CardDescription>
-            </Card>
+              {tab.label}
+            </button>
           ))}
         </div>
-      </section>
 
-      <section id="featured" className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 py-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold md:text-3xl">Featured startups</h2>
-          <Link href="/investor/dashboard" className="text-sm font-medium text-[var(--primary)]">
-            Explore all
-          </Link>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {startups.map((startup) => (
-            <StartupCard key={startup.id} startup={startup} />
+        <ShareComposer />
+
+        <div className="space-y-4">
+          {filteredFeed.map((post) => (
+            <FeedCard key={post.id} post={post} />
           ))}
         </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 py-10">
-        <h2 className="text-2xl font-semibold md:text-3xl">Featured investors</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {investors.map((investor) => (
-            <InvestorCard key={investor.id} investor={investor} />
-          ))}
-        </div>
-      </section>
-
-      <section id="stats" className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 py-10">
-        <h2 className="text-2xl font-semibold md:text-3xl">Platform statistics</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="text-center">
-              <p className="text-2xl font-semibold text-[var(--primary)]">{stat.value}</p>
-              <CardDescription className="mt-1">{stat.label}</CardDescription>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 py-10">
-        <h2 className="text-2xl font-semibold md:text-3xl">Founder and investor testimonials</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            "We closed our seed round in 5 weeks with higher-quality investor conversations.",
-            "The verification layer saved us from low-signal inbound and improved speed to conviction.",
-            "Deal workflow transparency made negotiation faster and much cleaner for our IC process.",
-          ].map((quote) => (
-            <Card key={quote}>
-              <p className="text-sm text-[var(--text-main)]">&ldquo;{quote}&rdquo;</p>
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-[var(--secondary)]">
-                <BadgeCheck size={12} /> Verified user
-              </p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8 py-12">
-        <Card className="bg-[var(--primary)] text-white">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <h3 className="text-2xl font-semibold">Ready to raise or invest with confidence?</h3>
-              <p className="mt-2 text-sm text-blue-100">Join a trusted ecosystem built for real startup funding execution.</p>
-            </div>
-            <div className="flex gap-3">
-              <Link href="/signup?role=founder">
-                <Button variant="success">Join as Founder</Button>
-              </Link>
-              <Link href="/signup?role=investor">
-                <Button variant="outline">Join as Investor</Button>
-              </Link>
-            </div>
-          </div>
-        </Card>
-      </section>
-
-      <Footer />
-    </div>
+      </div>
+    </AppShell>
   );
 }
