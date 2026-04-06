@@ -39,13 +39,13 @@ export function AppShell({ children, title, subtitle, actions }) {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
-    setAuthReady(true);
-  }, [router]);
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     router.replace("/login");
+  //     return;
+  //   }
+  //   setAuthReady(true);
+  // }, [router]);
 
   // if (!authReady) {
   //   return (
