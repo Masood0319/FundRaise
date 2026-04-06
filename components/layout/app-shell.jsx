@@ -38,7 +38,7 @@ export function AppShell({ children, title, subtitle, actions }) {
   const [authReady, setAuthReady] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
+  // useEffect(() => {
   //   const token = localStorage.getItem("token");
   //   if (!token) {
   //     router.replace("/login");
