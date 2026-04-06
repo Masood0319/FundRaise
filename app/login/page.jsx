@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { apiRequest } from "@/lib/apiClient"
 import { logoutUser } from "@/lib/auth"
 
-export default function Page() {
+function LoginPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const oauthError = searchParams.get("error")
@@ -123,7 +123,6 @@ export default function Page() {
     if (!showContinueModal) return
     lastActiveRef.current = document.activeElement
 
-    // Simple focus trap for the modal
     const focusable = modalRef.current?.querySelectorAll(
       'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
     )
@@ -369,7 +368,7 @@ export default function Page() {
 
             {/* FOOTER */}
             <p className="text-center text-sm text-gray-400 mt-6">
-              Don’t have an account?
+              Don't have an account?
               <Link href="signup" className="text-indigo-400 hover:text-indigo-300 ml-1">
                 Register
               </Link>
@@ -380,5 +379,13 @@ export default function Page() {
 
       </div>
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
   )
 }
